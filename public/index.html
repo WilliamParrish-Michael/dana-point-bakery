@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dana Point Bread — Weekly Order</title>
+  <meta name="description" content="Fresh-baked, small-batch bread. Order online, pick up Saturday in Dana Point." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-head">
+    <div class="wrap">
+      <div class="brand"><span class="loaf">🍞</span><span id="brand-name">Dana Point Bread</span></div>
+      <button class="cart-btn" id="cart-btn" disabled>
+        Cart <span class="count" id="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <h1 id="hero-title">Fresh-baked, small-batch.</h1>
+        <p class="tagline" id="hero-tagline">Order by Thursday — pick up Saturday.</p>
+        <div class="pickup-card" id="pickup-card" hidden>
+          <div class="field"><div class="label">This week's pickup</div><div class="value" id="pk-date">—</div></div>
+          <div class="field"><div class="label">Where</div><div class="value" id="pk-loc">—</div></div>
+          <div class="field"><div class="label">When</div><div class="value" id="pk-window">—</div></div>
+        </div>
+        <div class="closed-banner" id="closed-banner" hidden>
+          Ordering is closed right now. Check back soon for next Saturday's batch.
+        </div>
+      </div>
+    </section>
+
+    <section class="menu">
+      <div class="wrap">
+        <h2>This week's loaves</h2>
+        <p class="sub" id="menu-sub">Each is baked in a limited batch — when it's gone, it's gone.</p>
+        <div class="grid" id="bread-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span id="foot-name">Dana Point Bread</span> · Baked fresh in Dana Point, CA ·
+      <span id="foot-window">Saturday pickup</span>
+    </div>
+  </footer>
+
+  <!-- cart drawer -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-label="Your order">
+    <header>
+      <h2>Your order</h2>
+      <button class="close" id="drawer-close" aria-label="Close">×</button>
+    </header>
+    <div class="items" id="cart-items"></div>
+    <div class="checkout" id="checkout">
+      <div class="totals"><span>Total</span><span id="cart-total">$0.00</span></div>
+      <div id="pay-form">
+        <div class="form-field"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" /></div>
+        <div class="form-field"><label for="c-email">Email (order confirmation)</label><input id="c-email" type="email" autocomplete="email" /></div>
+        <div class="form-field"><label for="c-phone">Phone (optional)</label><input id="c-phone" type="tel" autocomplete="tel" /></div>
+        <div class="form-field"><label for="c-note">Note for the baker (optional)</label><textarea id="c-note"></textarea></div>
+        <div class="err" id="pay-err" hidden></div>
+        <div id="paypal-buttons"></div>
+        <p class="pay-note">Pay with Venmo, PayPal, or any card. You'll pick up and pay nothing more.</p>
+      </div>
+    </div>
+    <div class="confirm" id="confirm" hidden>
+      <div class="check">✓</div>
+      <h2>Order confirmed!</h2>
+      <p id="confirm-text">Thanks — we've got your bread reserved for Saturday pickup. A confirmation is on its way to your email.</p>
+    </div>
+  </aside>
+
+  <script src="/storefront.js"></script>
+</body>
+</html>
