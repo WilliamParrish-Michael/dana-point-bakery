@@ -21,11 +21,13 @@ services:
         value: production
       - key: SESSION_SECRET      # signs the admin login cookie
         generateValue: true      # Render generates a strong random value
-      - key: ADMIN_PASSWORD      # the baker's admin password — set this in the dashboard
-        sync: false
+      # ADMIN_PASSWORD is added later in the Render dashboard (Environment tab) to turn
+      # on the baker admin login. Until it's set, the admin is safely locked and the
+      # storefront works normally. Kept out of the Blueprint so nothing must be typed
+      # at deploy time and it can't be reset by a later blueprint sync.
       - key: PAYPAL_ENV
         value: sandbox           # "live" once real PayPal Business creds are added
-      - key: PAYPAL_CLIENT_ID    # optional: leave blank to preview without checkout
-        sync: false
-      - key: PAYPAL_CLIENT_SECRET
-        sync: false
+      # PayPal credentials are added later in the Render dashboard (Environment tab),
+      # once sandbox (or live) creds exist. Until then, checkout is simply off and the
+      # storefront + admin work normally. Kept out of the Blueprint so they aren't
+      # required at deploy time and can't be reset by a later blueprint sync.
