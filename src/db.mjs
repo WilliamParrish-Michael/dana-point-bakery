@@ -125,3 +125,32 @@ export function seedIfEmpty() {
   const tx = db.transaction(() => samples.forEach((s) => insert.run(...s)));
   tx();
 }
+
+/**
+ * On a brand-new database, also create a demo pickup for the upcoming Saturday
+ * with a batch of each bread — so a fresh deploy shows a populated storefront
+ * right away. The baker can edit or delete it from the admin.
+ */
+export function seedDemoPickupIfEmpty() {
+  const hasPickup = db.prepare('SELECT COUNT(*) AS n FROM pickups').get().n;
+  if (hasPickup > 0) return;
+
+  const now = new Date();
+  const daysUntilSat = (6 - now.getDay() + 7) % 7; // 0 if today is Saturday
+  const sat = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSat);
+  const iso = `${sat.getFullYear()}-${String(sat.getMonth() + 1).padStart(2, '0')}-${String(sat.getDate()).padStart(2, '0')}`;
+
+  const tx = db.transaction(() => {
+    const res = db
+      .prepare('INSERT INTO pickups (pickup_date, is_open, note) VALUES (?, 1, ?)')
+      .run(iso, 'Demo week — edit the quantities or delete this pickup from the admin.');
+    const pickupId = res.lastInsertRowid;
+    const breads = db.prepare('SELECT id FROM breads WHERE active = 1').all();
+    const insBatch = db.prepare(
+      'INSERT INTO batch_items (pickup_id, bread_id, quantity_total, quantity_reserved) VALUES (?, ?, ?, 0)'
+    );
+    const demoQty = { }; // default 8 each, a couple lower to show the "low stock" state
+    for (const b of breads) insBatch.run(pickupId, b.id, demoQty[b.id] ?? 8);
+  });
+  tx();
+}

@@ -1,0 +1,31 @@
+# Render Blueprint — one-click deploy of the whole app (storefront + admin + API).
+# In Render: New → Blueprint → pick this repo. It reads this file and provisions
+# the service. You'll be asked to fill in ADMIN_PASSWORD (and optionally PayPal).
+#
+# Free plan notes:
+#  - The service sleeps after ~15 min idle and takes ~50s to wake on the next visit.
+#  - Storage is temporary on free: the database + uploaded photos reset when the
+#    service restarts/redeploys, and the demo bread + Saturday re-seed automatically.
+#    Great for a live demo. For real orders that must persist, upgrade to a paid
+#    instance and add a Disk mounted at /opt/render/project/src/data.
+services:
+  - type: web
+    name: dana-point-bakery
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET      # signs the admin login cookie
+        generateValue: true      # Render generates a strong random value
+      - key: ADMIN_PASSWORD      # the baker's admin password — set this in the dashboard
+        sync: false
+      - key: PAYPAL_ENV
+        value: sandbox           # "live" once real PayPal Business creds are added
+      - key: PAYPAL_CLIENT_ID    # optional: leave blank to preview without checkout
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false

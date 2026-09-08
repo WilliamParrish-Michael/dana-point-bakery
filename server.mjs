@@ -11,7 +11,7 @@ import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { seedIfEmpty } from './src/db.mjs';
+import { seedIfEmpty, seedDemoPickupIfEmpty } from './src/db.mjs';
 import { sweepStaleReservations } from './src/inventory.mjs';
 import { UPLOAD_DIR } from './src/uploads.mjs';
 import { shopRouter } from './src/routes-shop.mjs';
@@ -35,6 +35,7 @@ app.get('/admin', (req, res) => res.sendFile(join(__dirname, 'public', 'admin.ht
 app.use(express.static(join(__dirname, 'public')));
 
 seedIfEmpty();
+seedDemoPickupIfEmpty();
 setInterval(() => {
   const released = sweepStaleReservations();
   if (released) console.log(`[sweep] released ${released} abandoned reservation(s)`);

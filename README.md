@@ -70,7 +70,28 @@ rates with PayPal). Money lands in the baker's PayPal balance.
 
 ## Deploying (handover)
 
-It runs anywhere Node runs. Easiest options:
+### Fastest: one-click Render (free)
+
+This repo includes a `render.yaml` Blueprint, so the whole site (storefront **and**
+admin) goes live on Render's free tier in a few clicks:
+
+1. Push this repo to GitHub (done).
+2. In [Render](https://dashboard.render.com) → **New** → **Blueprint** → connect this repo.
+3. Render reads `render.yaml` and sets everything up. When prompted, set:
+   - **ADMIN_PASSWORD** — the password you'll use to log into `/admin`.
+   - (Optional) **PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET** — leave blank to demo the
+     site without checkout, or paste PayPal **sandbox** creds to test the full flow.
+4. Click **Apply**. In ~2 minutes you get a live URL like
+   `https://dana-point-bakery.onrender.com` — store at `/`, admin at `/admin`.
+
+Free-tier caveats: the site sleeps after ~15 min idle (~50s to wake), and its storage
+is temporary (orders/uploads reset on restart; the demo bread re-seeds automatically).
+Perfect for a live demo. For persistent real orders, upgrade to a paid instance and add
+a Disk mounted at `/opt/render/project/src/data`.
+
+### Other options
+
+It runs anywhere Node runs:
 
 - **Render / Railway / Fly.io:** point it at this folder, set the `.env` values as
   environment variables, and add a **persistent disk** mounted at `/data` (or wherever
