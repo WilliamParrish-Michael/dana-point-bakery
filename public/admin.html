@@ -79,6 +79,9 @@
         <button data-tab="orders" class="active">Orders</button>
         <button data-tab="batch">This Week's Batch</button>
         <button data-tab="breads">Breads</button>
+        <button data-tab="pages">Pages</button>
+        <button data-tab="findus">Where to Find Us</button>
+        <button data-tab="gallery">Gallery</button>
         <button data-tab="settings">Shop Settings</button>
       </nav>
 
@@ -145,6 +148,69 @@
         <div class="card"><table id="breads-table"><tbody></tbody></table></div>
       </section>
 
+      <!-- PAGES -->
+      <section class="panel" id="panel-pages">
+        <div class="card">
+          <div class="row"><h3 style="margin:0">Edit a page</h3><div class="spacer"></div>
+            <select id="page-select" style="width:auto"></select>
+          </div>
+          <p class="muted" style="margin-top:8px">These are the info pages in your top menu. Start a line with <code>## </code> to make a subheading. Leave a blank line between paragraphs.</p>
+          <div style="margin-top:12px"><label>Page title</label><input id="page-title" /></div>
+          <div style="margin-top:12px"><label>Content</label><textarea id="page-body" rows="14" style="font-family:inherit"></textarea></div>
+          <label style="margin-top:12px;text-transform:none" class="muted"><input type="checkbox" id="page-innav" style="width:auto;display:inline;margin-right:6px">Show in the top menu</label>
+          <div class="row" style="margin-top:14px">
+            <button class="btn" id="save-page">Save page</button>
+            <a class="btn ghost small" id="view-page" href="#" target="_blank">View page ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- FIND US -->
+      <section class="panel" id="panel-findus">
+        <div class="card">
+          <h3 id="event-form-title">Add a market / pop-up</h3>
+          <div class="grid2">
+            <div><label>Title</label><input id="ev-title" placeholder="Dana Point Farmers Market" /></div>
+            <div><label>Date</label><input id="ev-date" type="date" /></div>
+          </div>
+          <div class="grid2" style="margin-top:12px">
+            <div><label>Location name</label><input id="ev-loc" placeholder="La Plaza Park" /></div>
+            <div><label>Address</label><input id="ev-addr" placeholder="Dana Point, CA" /></div>
+          </div>
+          <div class="grid2" style="margin-top:12px">
+            <div><label>Start time</label><input id="ev-start" placeholder="9:00 AM" /></div>
+            <div><label>End time</label><input id="ev-end" placeholder="1:00 PM" /></div>
+          </div>
+          <div style="margin-top:12px"><label>Note (optional)</label><textarea id="ev-note" rows="2"></textarea></div>
+          <div class="err" id="event-err" hidden></div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn" id="save-event">Save event</button>
+            <button class="btn ghost small" id="cancel-event" hidden>Cancel</button>
+          </div>
+        </div>
+        <div class="card"><table id="events-table"><tbody></tbody></table></div>
+      </section>
+
+      <!-- GALLERY -->
+      <section class="panel" id="panel-gallery">
+        <div class="card">
+          <h3>Add a photo</h3>
+          <p class="muted">Upload a photo of your bread or your booth. It shows in the gallery strip on your homepage.</p>
+          <div class="row" style="align-items:flex-start;gap:14px;margin-top:10px">
+            <img id="gal-preview" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:9px;border:1px solid var(--line);background:#efe6d3;display:none" />
+            <div style="flex:1;min-width:200px">
+              <input id="gal-file" type="file" accept="image/*" />
+              <div class="muted" id="gal-upload-status" style="margin-top:6px" hidden></div>
+              <div style="margin-top:10px"><label>Caption (optional)</label><input id="gal-caption" /></div>
+              <div style="margin-top:10px"><label>Link (optional, e.g. an Instagram post)</label><input id="gal-link" placeholder="https://…" /></div>
+            </div>
+          </div>
+          <div class="err" id="gal-err" hidden></div>
+          <div class="row" style="margin-top:14px"><button class="btn" id="save-gallery" disabled>Add to gallery</button></div>
+        </div>
+        <div class="card"><div id="gallery-list"></div></div>
+      </section>
+
       <!-- SETTINGS -->
       <section class="panel" id="panel-settings">
         <div class="card">
@@ -152,11 +218,20 @@
           <p class="muted">These show on your storefront.</p>
           <div style="margin-top:12px"><label>Shop name</label><input id="s-shop_name" /></div>
           <div style="margin-top:12px"><label>Tagline</label><input id="s-tagline" /></div>
+          <div style="margin-top:12px"><label>Hero line (big text under the name)</label><input id="s-hero_line" /></div>
           <div style="margin-top:12px"><label>Pickup location</label><input id="s-pickup_location" /></div>
           <div style="margin-top:12px"><label>Pickup window</label><input id="s-pickup_window" /></div>
           <div style="margin-top:12px"><label>Order instructions</label><textarea id="s-order_instructions" rows="2"></textarea></div>
-          <div class="row" style="margin-top:14px"><button class="btn" id="save-settings">Save details</button></div>
+          <div style="margin-top:12px"><label>Gallery heading</label><input id="s-gallery_heading" /></div>
         </div>
+        <div class="card">
+          <h3>Social &amp; contact</h3>
+          <p class="muted">Add links to show a "Follow us" section and footer links.</p>
+          <div style="margin-top:12px"><label>Instagram URL</label><input id="s-instagram_url" placeholder="https://instagram.com/…" /></div>
+          <div style="margin-top:12px"><label>Facebook URL</label><input id="s-facebook_url" placeholder="https://facebook.com/…" /></div>
+          <div style="margin-top:12px"><label>Contact email</label><input id="s-contact_email" type="email" placeholder="hello@…" /></div>
+        </div>
+        <div class="row"><button class="btn" id="save-settings">Save details</button></div>
       </section>
     </div>
   </div>

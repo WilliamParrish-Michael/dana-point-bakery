@@ -54,7 +54,7 @@
   async function loadAll() {
     pickups = await api('/api/admin/pickups');
     fillPickupSelectors();
-    await Promise.all([loadOrders(), loadBreads(), loadSettings()]);
+    await Promise.all([loadOrders(), loadBreads(), loadSettings(), loadPages(), loadEvents(), loadGallery()]);
     if (pickups[0]) loadBatch(pickups[0].id);
   }
   function fillPickupSelectors() {
@@ -228,7 +228,8 @@
   });
 
   /* ── settings ─────────────────────────────────────── */
-  const SKEYS = ['shop_name', 'tagline', 'pickup_location', 'pickup_window', 'order_instructions'];
+  const SKEYS = ['shop_name', 'tagline', 'hero_line', 'pickup_location', 'pickup_window',
+    'order_instructions', 'gallery_heading', 'instagram_url', 'facebook_url', 'contact_email'];
   async function loadSettings() {
     const s = await api('/api/admin/settings');
     for (const k of SKEYS) $('s-' + k).value = s[k] || '';
@@ -237,6 +238,114 @@
     const body = {}; for (const k of SKEYS) body[k] = $('s-' + k).value;
     await api('/api/admin/settings', { method: 'PUT', body }); toast('Saved');
   });
+
+  /* ── pages ────────────────────────────────────────── */
+  let pagesData = [];
+  async function loadPages() {
+    pagesData = await api('/api/admin/pages');
+    $('page-select').innerHTML = pagesData.map((p) => `<option value="${p.slug}">${esc(p.title)}</option>`).join('');
+    if (pagesData[0]) selectPage(pagesData[0].slug);
+  }
+  $('page-select').addEventListener('change', (e) => selectPage(e.target.value));
+  function selectPage(slug) {
+    const p = pagesData.find((x) => x.slug === slug); if (!p) return;
+    $('page-select').value = slug;
+    $('page-title').value = p.title;
+    $('page-body').value = p.body;
+    $('page-innav').checked = !!p.in_nav;
+    $('view-page').href = '/' + p.slug;
+  }
+  $('save-page').addEventListener('click', async () => {
+    const slug = $('page-select').value; if (!slug) return;
+    await api('/api/admin/pages/' + slug, { method: 'PUT', body: {
+      title: $('page-title').value, body: $('page-body').value, in_nav: $('page-innav').checked ? 1 : 0 } });
+    toast('Page saved'); loadPages();
+  });
+
+  /* ── events (Find Us) ─────────────────────────────── */
+  let editingEventId = null;
+  async function loadEvents() {
+    const events = await api('/api/admin/events');
+    const tb = $('events-table').querySelector('tbody');
+    tb.innerHTML = '<tr><th>Date</th><th>Event</th><th></th></tr>' + (events.length
+      ? events.map((e) => `<tr>
+          <td>${esc(fmtDate(e.event_date))}</td>
+          <td><strong>${esc(e.title)}</strong><div class="muted">${esc(e.location_name || '')}${e.start_time ? ' · ' + esc(e.start_time) : ''}</div></td>
+          <td class="row" style="justify-content:flex-end">
+            <button class="btn small ghost" data-edit-ev='${esc(JSON.stringify(e))}'>Edit</button>
+            <button class="btn small danger" data-del-ev="${e.id}">Delete</button>
+          </td></tr>`).join('')
+      : '<tr><td class="muted">No markets yet — add one above.</td></tr>');
+    tb.querySelectorAll('[data-edit-ev]').forEach((b) => b.addEventListener('click', () => startEditEvent(JSON.parse(b.dataset.editEv))));
+    tb.querySelectorAll('[data-del-ev]').forEach((b) => b.addEventListener('click', async () => {
+      await api('/api/admin/events/' + b.dataset.delEv, { method: 'DELETE' }); toast('Deleted'); loadEvents();
+    }));
+  }
+  function eventForm() {
+    return { title: $('ev-title').value.trim(), event_date: $('ev-date').value,
+      location_name: $('ev-loc').value.trim(), address: $('ev-addr').value.trim(),
+      start_time: $('ev-start').value.trim(), end_time: $('ev-end').value.trim(),
+      note: $('ev-note').value.trim(), active: 1 };
+  }
+  function startEditEvent(e) {
+    editingEventId = e.id; $('event-form-title').textContent = 'Edit event';
+    $('ev-title').value = e.title; $('ev-date').value = e.event_date; $('ev-loc').value = e.location_name;
+    $('ev-addr').value = e.address; $('ev-start').value = e.start_time; $('ev-end').value = e.end_time; $('ev-note').value = e.note;
+    $('cancel-event').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function resetEventForm() {
+    editingEventId = null; $('event-form-title').textContent = 'Add a market / pop-up';
+    ['ev-title', 'ev-date', 'ev-loc', 'ev-addr', 'ev-start', 'ev-end', 'ev-note'].forEach((id) => ($(id).value = ''));
+    $('cancel-event').hidden = true; $('event-err').hidden = true;
+  }
+  $('cancel-event').addEventListener('click', resetEventForm);
+  $('save-event').addEventListener('click', async () => {
+    $('event-err').hidden = true;
+    const body = eventForm();
+    if (!body.title || !body.event_date) { $('event-err').textContent = 'Title and date are required.'; $('event-err').hidden = false; return; }
+    try {
+      if (editingEventId) await api('/api/admin/events/' + editingEventId, { method: 'PUT', body });
+      else await api('/api/admin/events', { method: 'POST', body });
+      toast('Saved'); resetEventForm(); loadEvents();
+    } catch (err) { $('event-err').textContent = err.message; $('event-err').hidden = false; }
+  });
+
+  /* ── gallery ──────────────────────────────────────── */
+  let galImageUrl = '';
+  $('gal-file').addEventListener('change', async () => {
+    const file = $('gal-file').files[0]; if (!file) return;
+    const st = $('gal-upload-status'); st.hidden = false; st.textContent = 'Uploading…';
+    try {
+      const fd = new FormData(); fd.append('image', file);
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+      const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Upload failed.');
+      galImageUrl = data.url; $('gal-preview').src = data.url; $('gal-preview').style.display = 'block';
+      $('save-gallery').disabled = false; st.textContent = 'Ready ✓';
+    } catch (err) { st.textContent = err.message; }
+  });
+  $('save-gallery').addEventListener('click', async () => {
+    if (!galImageUrl) return;
+    await api('/api/admin/gallery', { method: 'POST', body: {
+      image_url: galImageUrl, caption: $('gal-caption').value.trim(), link_url: $('gal-link').value.trim() } });
+    toast('Added to gallery');
+    galImageUrl = ''; $('gal-file').value = ''; $('gal-caption').value = ''; $('gal-link').value = '';
+    $('gal-preview').style.display = 'none'; $('save-gallery').disabled = true; $('gal-upload-status').hidden = true;
+    loadGallery();
+  });
+  async function loadGallery() {
+    const posts = await api('/api/admin/gallery');
+    const box = $('gallery-list');
+    box.innerHTML = posts.length
+      ? '<table><tbody><tr><th>Photo</th><th>Caption</th><th></th></tr>' + posts.map((p) => `<tr>
+          <td><img src="${esc(p.image_url)}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"></td>
+          <td>${esc(p.caption || '')}${p.link_url ? `<div class="muted">${esc(p.link_url)}</div>` : ''}</td>
+          <td class="row" style="justify-content:flex-end"><button class="btn small danger" data-del-gal="${p.id}">Remove</button></td>
+        </tr>`).join('') + '</tbody></table>'
+      : '<p class="muted">No photos yet — add one above.</p>';
+    box.querySelectorAll('[data-del-gal]').forEach((b) => b.addEventListener('click', async () => {
+      await api('/api/admin/gallery/' + b.dataset.delGal, { method: 'DELETE' }); toast('Removed'); loadGallery();
+    }));
+  }
 
   checkSession().catch(() => showLogin());
 })();

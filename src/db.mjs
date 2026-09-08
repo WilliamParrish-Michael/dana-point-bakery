@@ -79,6 +79,40 @@ db.exec(`
     key    TEXT PRIMARY KEY,
     value  TEXT NOT NULL
   );
+
+  -- Editable content pages (About, Our Process, Storage & Reheating, FAQ).
+  CREATE TABLE IF NOT EXISTS pages (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug        TEXT NOT NULL UNIQUE,           -- 'about', 'process', 'storage-reheating', 'faq'
+    title       TEXT NOT NULL,
+    body        TEXT NOT NULL DEFAULT '',       -- blank-line paragraphs; lines starting '## ' are subheadings
+    in_nav      INTEGER NOT NULL DEFAULT 1,
+    sort_order  INTEGER NOT NULL DEFAULT 0,
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- "Where to find us" — farmers markets / pop-up appearances.
+  CREATE TABLE IF NOT EXISTS market_events (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    title          TEXT NOT NULL,
+    location_name  TEXT NOT NULL DEFAULT '',
+    address        TEXT NOT NULL DEFAULT '',
+    event_date     TEXT NOT NULL,               -- 'YYYY-MM-DD'
+    start_time     TEXT NOT NULL DEFAULT '',
+    end_time       TEXT NOT NULL DEFAULT '',
+    note           TEXT NOT NULL DEFAULT '',
+    active         INTEGER NOT NULL DEFAULT 1
+  );
+
+  -- Baker-controlled photo gallery (an Instagram-style strip they own).
+  CREATE TABLE IF NOT EXISTS gallery_posts (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    image_url   TEXT NOT NULL,
+    caption     TEXT NOT NULL DEFAULT '',
+    link_url    TEXT NOT NULL DEFAULT '',
+    sort_order  INTEGER NOT NULL DEFAULT 0,
+    active      INTEGER NOT NULL DEFAULT 1
+  );
 `);
 
 /* ── settings helpers ─────────────────────────────────────────────────────── */
@@ -103,6 +137,11 @@ const DEFAULT_SETTINGS = {
   pickup_location: 'Dana Point, CA (address shared after you order)',
   pickup_window: 'Saturdays, 9:00 AM – 12:00 PM',
   order_instructions: 'Bring your name; we\'ll have your bread bagged and ready.',
+  hero_line: 'Good bread takes time.',
+  instagram_url: '',
+  facebook_url: '',
+  contact_email: '',
+  gallery_heading: 'Fresh from the oven',
 };
 for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
   if (!_getSetting.get(k)) _setSetting.run(k, v);
@@ -153,4 +192,77 @@ export function seedDemoPickupIfEmpty() {
     for (const b of breads) insBatch.run(pickupId, b.id, demoQty[b.id] ?? 8);
   });
   tx();
+}
+
+/** Seed the editable content pages, a sample market, and a starter gallery. */
+export function seedContentIfEmpty() {
+  if (db.prepare('SELECT COUNT(*) AS n FROM pages').get().n === 0) {
+    const ins = db.prepare(
+      'INSERT INTO pages (slug, title, body, in_nav, sort_order) VALUES (?, ?, ?, 1, ?)'
+    );
+    const pages = [
+      ['about', 'About', [
+        'We\'re a small-batch bakery in Dana Point, baking a handful of loaves each week the slow way — long ferments, simple ingredients, and a lot of patience.',
+        'Everything is made by hand and baked fresh the morning of pickup. We keep the batches small on purpose: it\'s the only way to get the crust and crumb right.',
+        '## Our promise',
+        'Order by Thursday, pick up Saturday, still warm. That\'s it.',
+      ].join('\n\n'), 3],
+      ['process', 'Our Process', [
+        'Good bread takes time — usually a day and a half from flour to loaf.',
+        '## Slow ferment',
+        'We build flavor with a natural sourdough starter and a long, cool overnight rise. No shortcuts, no commercial yeast.',
+        '## Baked to order',
+        'We only bake what\'s been ordered for the week, so nothing sits on a shelf. Your loaf comes out of the oven the morning you pick it up.',
+      ].join('\n\n'), 2],
+      ['storage-reheating', 'Storage & Reheating', [
+        'Fresh bread with no preservatives is best the day you get it — but here\'s how to keep it great all week.',
+        '## Storing',
+        'Keep it cut-side down on a board for the first day or two. After that, slice what you need and freeze the rest in a zip bag — it freezes beautifully.',
+        '## Reheating',
+        'To bring back the crust: heat your oven to 375°F, run the loaf briefly under water (yes, really), and bake 8–10 minutes. For frozen slices, toast straight from the freezer.',
+        '## What to avoid',
+        'Skip the plastic bag on the counter — it softens the crust. And skip the fridge; it stales bread faster than room temperature.',
+      ].join('\n\n'), 1],
+      ['faq', 'FAQ', [
+        '## How does ordering work?',
+        'Order online by Thursday night, choose Saturday pickup, and pay with Venmo, PayPal, or card. We bake your loaves fresh Saturday morning.',
+        '## Where do I pick up?',
+        'Pickup is in Dana Point — we\'ll share the exact address after you order. Check "Where to Find Us" for any farmers-market dates too.',
+        '## What if I need to cancel?',
+        'Just reach out before Thursday and we\'ll sort it out.',
+        '## Do you ship?',
+        'Not yet — we\'re local pickup only for now, so the bread\'s at its best when you get it.',
+      ].join('\n\n'), 4],
+    ];
+    const tx = db.transaction(() => pages.forEach((p) => ins.run(...p)));
+    tx();
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS n FROM market_events').get().n === 0) {
+    // A sample upcoming Saturday market so the "Find Us" page isn't empty.
+    const now = new Date();
+    const d = (6 - now.getDay() + 7) % 7;
+    const sat = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
+    const iso = `${sat.getFullYear()}-${String(sat.getMonth() + 1).padStart(2, '0')}-${String(sat.getDate()).padStart(2, '0')}`;
+    db.prepare(
+      `INSERT INTO market_events (title, location_name, address, event_date, start_time, end_time, note)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run('Dana Point Farmers Market', 'La Plaza Park', 'Dana Point, CA', iso, '9:00 AM', '1:00 PM',
+      'Come say hi — we\'ll have extra loaves and pastries. (Example event — edit in the admin.)');
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS n FROM gallery_posts').get().n === 0) {
+    const ins = db.prepare(
+      'INSERT INTO gallery_posts (image_url, caption, sort_order) VALUES (?, ?, ?)'
+    );
+    const shots = [
+      ['/uploads/seed-sourdough.jpg', 'Classic sourdough, fresh out of the oven', 1],
+      ['/uploads/seed-baguette.jpg', 'Baguettes cooling on the rack', 2],
+      ['/uploads/seed-cinnamon.jpg', 'Cinnamon raisin swirl', 3],
+      ['/uploads/seed-jalapeno.jpg', 'Jalapeño cheddar, still bubbling', 4],
+      ['/uploads/seed-wholewheat.jpg', 'Stone-milled whole wheat', 5],
+    ];
+    const tx = db.transaction(() => shots.forEach((s) => ins.run(...s)));
+    tx();
+  }
 }

@@ -13,7 +13,8 @@
 <body>
   <header class="site-head">
     <div class="wrap">
-      <div class="brand"><span class="loaf">🍞</span><span id="brand-name">Dana Point Bread</span></div>
+      <a class="brand" href="/"><span class="loaf">🍞</span><span id="brand-name">Dana Point Bread</span></a>
+      <nav class="main-nav" id="main-nav"></nav>
       <button class="cart-btn" id="cart-btn" disabled>
         Cart <span class="count" id="cart-count">0</span>
       </button>
@@ -43,12 +44,35 @@
         <div class="grid" id="bread-grid"></div>
       </div>
     </section>
+
+    <section class="home-band" id="findus-band" hidden>
+      <div class="wrap">
+        <div class="band-card">
+          <div>
+            <div class="eyebrow">Where to find us</div>
+            <h2>Catch us around town</h2>
+            <div class="next-market" id="next-market"></div>
+          </div>
+          <div class="spacer"></div>
+          <a class="btn-dark" href="/find-us">See all markets →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="gallery" id="gallery-section" hidden>
+      <div class="wrap">
+        <h2 id="gallery-heading">Fresh from the oven</h2>
+        <p class="sub">A little of what we've been baking.</p>
+        <div class="gallery-grid" id="gallery-grid"></div>
+        <div class="social-links" id="social-links"></div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="wrap">
-      <span id="foot-name">Dana Point Bread</span> · Baked fresh in Dana Point, CA ·
-      <span id="foot-window">Saturday pickup</span>
+      <div><span id="foot-name">Dana Point Bread</span> · Baked fresh in Dana Point, CA · <span id="foot-window">Saturday pickup</span></div>
+      <div class="foot-social" id="foot-social"></div>
     </div>
   </footer>
 

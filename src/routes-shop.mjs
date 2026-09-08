@@ -4,6 +4,7 @@
  */
 import express from 'express';
 import { getSetting } from './db.mjs';
+import { navItems } from './render-page.mjs';
 import {
   currentPickup,
   availabilityFor,
@@ -26,9 +27,14 @@ function shopSettings() {
   return {
     shopName: getSetting('shop_name'),
     tagline: getSetting('tagline'),
+    heroLine: getSetting('hero_line'),
     pickupLocation: getSetting('pickup_location'),
     pickupWindow: getSetting('pickup_window'),
     orderInstructions: getSetting('order_instructions'),
+    galleryHeading: getSetting('gallery_heading'),
+    instagramUrl: getSetting('instagram_url'),
+    facebookUrl: getSetting('facebook_url'),
+    contactEmail: getSetting('contact_email'),
   };
 }
 
@@ -37,6 +43,7 @@ shopRouter.get('/api/shop', (req, res) => {
   const pickup = currentPickup();
   res.json({
     settings: shopSettings(),
+    nav: navItems(),
     paypal: paypalConfigured
       ? { clientId: paypalPublic.clientId, currency: paypalPublic.currency, env: paypalPublic.env }
       : null,

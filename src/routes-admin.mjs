@@ -164,9 +164,14 @@ adminRouter.patch('/api/admin/orders/:id', (req, res) => {
 const SETTING_KEYS = [
   'shop_name',
   'tagline',
+  'hero_line',
   'pickup_location',
   'pickup_window',
   'order_instructions',
+  'gallery_heading',
+  'instagram_url',
+  'facebook_url',
+  'contact_email',
 ];
 adminRouter.get('/api/admin/settings', (req, res) => {
   const out = {};

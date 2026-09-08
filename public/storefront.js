@@ -29,9 +29,63 @@
       $('menu-sub').textContent = 'Ordering opens again soon.';
     }
 
+    if (s.galleryHeading) $('gallery-heading').textContent = s.galleryHeading;
+    renderNav(data.nav || []);
+    renderSocial(s);
     renderBreads();
     wireCart();
+    loadFindUs();
+    loadGallery();
     if (data.paypal) loadPayPal(data.paypal);
+  }
+
+  function renderNav(items) {
+    const nav = $('main-nav');
+    nav.innerHTML = items
+      .map((i) => `<a href="${escapeAttr(i.href)}"${i.href === '/' ? ' class="active"' : ''}>${escapeHtml(i.label)}</a>`)
+      .join('');
+  }
+
+  function renderSocial(s) {
+    const links = [];
+    if (s.instagramUrl) links.push(['Instagram', s.instagramUrl]);
+    if (s.facebookUrl) links.push(['Facebook', s.facebookUrl]);
+    if (s.contactEmail) links.push(['Email', 'mailto:' + s.contactEmail]);
+    const foot = $('foot-social');
+    foot.innerHTML = links.map(([l, h]) => `<a href="${escapeAttr(h)}" rel="noopener" target="_blank">${l}</a>`).join('');
+    // gallery social row (only the real socials, styled as buttons)
+    const social = links.filter(([l]) => l !== 'Email');
+    $('social-links').innerHTML = social.length
+      ? social.map(([l, h]) => `<a href="${escapeAttr(h)}" rel="noopener" target="_blank">${l === 'Instagram' ? '📷' : '👍'} Follow on ${l}</a>`).join('')
+      : '';
+  }
+
+  async function loadFindUs() {
+    try {
+      const events = await (await fetch('/api/find-us')).json();
+      if (!events.length) return;
+      const e = events[0];
+      const when = formatDate(e.event_date);
+      $('next-market').innerHTML =
+        `Next up: <strong>${escapeHtml(e.title)}</strong> — ${escapeHtml(when)}` +
+        (e.location_name ? ` at ${escapeHtml(e.location_name)}` : '');
+      $('findus-band').hidden = false;
+    } catch { /* ignore */ }
+  }
+
+  async function loadGallery() {
+    try {
+      const posts = await (await fetch('/api/gallery')).json();
+      if (!posts.length) return;
+      $('gallery-grid').innerHTML = posts
+        .map((p) => {
+          const img = `<img src="${escapeAttr(p.image_url)}" alt="${escapeAttr(p.caption || 'Bakery photo')}" loading="lazy" />`;
+          const fig = `<figure>${img}${p.caption ? `<figcaption>${escapeHtml(p.caption)}</figcaption>` : ''}</figure>`;
+          return p.link_url ? `<a href="${escapeAttr(p.link_url)}" rel="noopener" target="_blank">${fig}</a>` : fig;
+        })
+        .join('');
+      $('gallery-section').hidden = false;
+    } catch { /* ignore */ }
   }
 
   function formatDate(iso) {
