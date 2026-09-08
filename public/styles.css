@@ -135,13 +135,17 @@ footer { border-top: 1px solid var(--line); padding: 30px 0; color: var(--ink-so
 
 /* ── nav ────────────────────────────────────────────── */
 .brand { text-decoration: none; color: var(--ink); }
-.site-head .wrap { gap: 12px; }
+.site-head .wrap { gap: 12px; position: relative; }
+.head-actions { display: flex; align-items: center; gap: 10px; }
 .main-nav { display: flex; align-items: center; gap: 4px; overflow-x: auto; flex: 1; justify-content: center; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .main-nav::-webkit-scrollbar { display: none; }
 .main-nav a { color: var(--ink-soft); text-decoration: none; font-weight: 600; font-size: .93rem; padding: 7px 12px; border-radius: 999px; white-space: nowrap; }
 .main-nav a:hover { color: var(--ink); background: var(--paper-2); }
 .main-nav a.active { color: var(--ink); background: var(--paper-2); }
 a.cart-btn { text-decoration: none; }
+/* hamburger (mobile only) */
+.nav-burger { display: none; width: 44px; height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); cursor: pointer; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+.nav-burger::before { content: "\2630"; font-size: 1.35rem; color: var(--ink); line-height: 1; }
 
 /* ── homepage: find-us teaser ───────────────────────── */
 .home-band { padding: 24px 0 60px; }
@@ -192,9 +196,21 @@ footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-cont
 .foot-social { display: flex; gap: 16px; }
 .foot-social a { color: var(--crust-deep); text-decoration: none; font-weight: 600; }
 
-@media (max-width: 620px) {
-  .site-head .wrap { flex-wrap: wrap; height: auto; padding-top: 10px; padding-bottom: 10px; }
-  .main-nav { order: 3; width: 100%; justify-content: flex-start; padding-top: 6px; border-top: 1px solid var(--line); }
+/* On phones + small tablets, collapse the nav into a hamburger dropdown. */
+@media (max-width: 900px) {
+  .nav-burger { display: inline-flex; }
+  #nav-toggle:checked ~ .head-actions .nav-burger::before { content: "\2715"; font-size: 1.15rem; }
+  .main-nav {
+    position: absolute; top: calc(100% + 1px); left: 0; right: 0;
+    flex: initial; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: 2px; padding: 8px; background: var(--paper-2);
+    border-bottom: 1px solid var(--line); box-shadow: var(--shadow);
+    max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
+    transition: max-height .25s ease, opacity .2s, padding .2s; z-index: 25;
+  }
+  #nav-toggle:checked ~ .main-nav { max-height: 78vh; overflow-y: auto; opacity: 1; pointer-events: auto; }
+  .main-nav a { padding: 13px 14px; font-size: 1rem; border-radius: 10px; }
+  .main-nav a.active { background: var(--paper); }
 }
 @media (max-width: 560px) {
   .hero { padding: 34px 0 18px; }

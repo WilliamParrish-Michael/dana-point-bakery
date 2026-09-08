@@ -87,8 +87,12 @@ export function renderShell({ title, activeHref, contentHtml }) {
   <header class="site-head">
     <div class="wrap">
       <a class="brand" href="/"><span class="loaf">🍞</span><span>${escapeHtml(shop)}</span></a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden />
       ${navHtml(activeHref)}
-      <a class="cart-btn" href="/">Order</a>
+      <div class="head-actions">
+        <a class="cart-btn" href="/">Order</a>
+        <label for="nav-toggle" class="nav-burger" aria-label="Open menu"></label>
+      </div>
     </div>
   </header>
   <main class="content-page">

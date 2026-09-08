@@ -14,10 +14,14 @@
   <header class="site-head">
     <div class="wrap">
       <a class="brand" href="/"><span class="loaf">🍞</span><span id="brand-name">Dana Point Bread</span></a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden />
       <nav class="main-nav" id="main-nav"></nav>
-      <button class="cart-btn" id="cart-btn" disabled>
-        Cart <span class="count" id="cart-count">0</span>
-      </button>
+      <div class="head-actions">
+        <button class="cart-btn" id="cart-btn" disabled>
+          Cart <span class="count" id="cart-count">0</span>
+        </button>
+        <label for="nav-toggle" class="nav-burger" aria-label="Open menu"></label>
+      </div>
     </div>
   </header>
 
