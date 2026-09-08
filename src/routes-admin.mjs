@@ -5,7 +5,7 @@
 import express from 'express';
 import { db, getSetting, setSetting } from './db.mjs';
 import { checkPassword, issueSession, clearSession, requireAdmin, isAdmin } from './auth.mjs';
-import { uploadImage } from './uploads.mjs';
+import { uploadImage, storeImage } from './uploads.mjs';
 
 export const adminRouter = express.Router();
 
@@ -27,10 +27,16 @@ adminRouter.use('/api/admin', requireAdmin);
 
 /* ── photo upload ─────────────────────────────────────────────────────────── */
 adminRouter.post('/api/admin/upload', (req, res) => {
-  uploadImage(req, res, (err) => {
+  uploadImage(req, res, async (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: 'No image received.' });
-    res.json({ url: `/uploads/${req.file.filename}` });
+    try {
+      const url = await storeImage(req.file);
+      res.json({ url });
+    } catch (e) {
+      console.error('[upload] failed:', e.message);
+      res.status(502).json({ error: 'Image upload failed. Please try again.' });
+    }
   });
 });
 
